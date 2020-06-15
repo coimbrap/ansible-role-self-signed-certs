@@ -1,0 +1,30 @@
+---
+  - name: Generate CA cert
+    import_tasks: generate-ca-cert.yam
+    when:
+      - generate_tls_certs
+      - generate_ca_cert|bool
+
+  - name: Generate client cert
+    import_tasks: generate-client-cert.yam
+    when:
+      - generate_tls_certs
+      - generate_client_cert|bool
+
+  - name: Generate server cert
+    import_tasks: generate-server-cert.yam
+    when:
+      - generate_tls_certs
+      - generate_server_cert|bool
+
+  - name: Generate pfx cert
+    import_tasks: generate-pfx-cert.yam
+    when:
+      - generate_tls_certs
+      - generate_pfx_cert|bool
+
+  - name: Copy certs
+    import_tasks: copy-cert.yam
+    when:
+      - generate_tls_certs
+      - copy_cert|bool

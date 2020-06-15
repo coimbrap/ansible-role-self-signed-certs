@@ -1,0 +1,63 @@
+---
+  - name: Copy CA cert to config folder from Autority to HAProxy
+    tags: sync-pull
+    synchronize:
+      src: "{{tls_ca_path}}/{{tls_ca_cert}}"
+      dest: "{{ct_path_certfile_haproxy}}"
+      mode: pull
+    delegate_to: haproxy
+    register: syncfile
+    run_once: true
+    when: client_to_haproxy|bool
+
+  - name: Ensures {{ct_path_certfile_auto_nginx}} dir exists
+    run_once: yes
+    file: path={{ct_path_certfile_auto_nginx}} state=directory
+    delegate_to: "{{ item }}"
+    with_items:
+      - "{{groups.nginx}}"
+    when: haproxy_to_nginx|bool
+
+  - name: Fetch cert
+    run_once: yes
+    fetch: src="{{cert_dir}}/{{server_name}}.pem" dest=buffer/ flat=yes
+    when: haproxy_to_nginx|bool
+
+  - name: Copy cert to NGINX config folder
+    copy: src="buffer/{{server_name}}.pem" dest="{{ct_path_certfile_auto_nginx}}/{{server_name}}.crt"
+    delegate_to: "{{ item }}"
+    with_items:
+      - "{{groups.nginx}}"
+    when: haproxy_to_nginx|bool
+
+  - name: Fetch key file
+    run_once: yes
+    fetch: src="{{cert_dir}}/{{server_name}}.key" dest=buffer/ flat=yes
+    when: haproxy_to_nginx|bool
+
+  - name: Copy key file to NGINX config folder
+    copy: src="buffer/{{server_name}}.key" dest="{{ct_path_certfile_auto_nginx}}/{{server_name}}.key"
+    delegate_to: "{{ item }}"
+    with_items:
+      - "{{groups.nginx}}"
+    when: haproxy_to_nginx|bool
+
+  - name: Ensures {{ct_path_certfile_auto_haproxy}} dir exists
+    run_once: yes
+    file: path={{ct_path_certfile_auto_haproxy}} state=directory
+    delegate_to: "{{ item }}"
+    with_items:
+      - "{{groups.haproxy}}"
+    when: haproxy_to_nginx|bool
+
+  - name: Fetch cert
+    run_once: yes
+    fetch: src="{{tls_ca_path}}/{{tls_ca_cert}}" dest=buffer/ flat=yes
+    when: haproxy_to_nginx|bool
+
+  - name: Copy cert to NGINX config folder
+    copy: src="buffer/{{tls_ca_cert}}" dest="{{ct_path_certfile_auto_haproxy}}/{{tls_ca_cert}}"
+    delegate_to: "{{ item }}"
+    with_items:
+      - "{{groups.haproxy}}"
+    when: haproxy_to_nginx|bool

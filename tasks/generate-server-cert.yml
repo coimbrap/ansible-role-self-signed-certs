@@ -1,0 +1,24 @@
+---
+  - name: Create CSR for server cert
+    shell: |
+        if [ ! -e {{cert_dir}}/{{server_name}}.csr ]
+        then
+        openssl req -newkey rsa:{{tls_server_key_size}} -nodes -subj "/CN={{tls_server_key_cn}}" \
+        -keyout "{{cert_dir}}/{{server_name}}.key" -out "{{cert_dir}}/{{server_name}}.csr"
+        fi
+    args:
+      executable: /bin/bash
+    ignore_errors: true
+    when: generate_server_cert
+
+  - name: Sign server cert request by CA
+    shell: |
+        if [ ! -e {{cert_dir}}/{{server_name}}.pem ]
+        then
+        openssl x509 -req -sha256 -days {{tls_server_valid_days}} \
+        -CA "{{tls_ca_path}}/{{tls_ca_cert}}" -CAkey "{{tls_ca_path}}/{{tls_ca_key}}" -set_serial {{ 999999999 | random }} -in "{{cert_dir}}/{{server_name}}.csr" -out "{{cert_dir}}/{{server_name}}.pem"
+        fi
+    args:
+      executable: /bin/bash
+    ignore_errors: true
+    when: generate_server_cert

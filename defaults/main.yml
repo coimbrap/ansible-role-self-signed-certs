@@ -1,0 +1,59 @@
+---
+generate_tls_certs: true
+cert_dir: /root/tmpcrt
+generate_ca_cert: true
+generate_client_cert: false
+generate_server_cert: true
+generate_pfx_cert: false
+
+# ----
+# COPY
+# ----
+copy_cert: false
+ct_path_certfile_auto_nginx: /etc/nginx/ssl
+ct_path_certfile_auto_haproxy: /etc/ssl/haproxy
+
+# -------
+# CA CERT
+# -------
+tls_ca_path: /root/elukerio-ca
+tls_ca_cert: elukerio-ca.pem
+tls_ca_csr: elukerio-ca.csr
+tls_ca_key: elukerio-ca.key
+tls_ca_key_size: 4096
+tls_ca_valid_days: 3650
+tls_ca_state:
+tls_ca_locality:
+tls_ca_organizationalunit:
+tls_ca_country: FR
+tls_ca_organization: Elukerio
+tls_ca_commonname: Elukerio Authority
+
+# -----------
+# CLIENT CERT
+# -----------
+tls_client_cert: "{{tls_client_authname}}.pem"
+tls_client_key: "{{tls_client_authname}}.key"
+tls_client_csr: "{{tls_client_authname}}.csr"
+tls_client_extfile: "{{tls_client_authname}}.cnf"
+tls_client_organization: Elukerio Adminsys
+tls_client_country: FR
+tls_client_key_size: 4096
+tls_client_authname: Client
+tls_client_valid_days: 730
+
+# -----------
+# SERVER CERT
+# -----------
+server_name: default-serv
+tls_server_key_cn: '*.foo.org'
+tls_server_valid_days: 730
+tls_server_key_size: 4096
+tls_server_enable_san: false
+
+# --------
+# PFX CERT
+# --------
+tls_pfx_path: /etc/ssl/pfx
+tls_pfx_password: strongpass
+fetch_dest: .

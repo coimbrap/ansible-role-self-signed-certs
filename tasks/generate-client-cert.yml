@@ -1,0 +1,53 @@
+---
+  - name: Generate client private key
+    openssl_privatekey:
+      path: "{{cert_dir}}/{{tls_client_key}}"
+      size: "{{tls_client_key_size}}"
+    run_once: true
+    when: generate_client_cert
+
+  - name: Generate CSR and key for client cert
+    shell: |
+        if [ ! -e {{cert_dir}}/{{tls_client_csr}} ]
+        then
+        openssl req -newkey rsa:{{tls_client_key_size}} -nodes -subj "/CN={{tls_client_authname}}/O={{tls_client_organization}}/C={{tls_client_country}}" \
+        -keyout "{{cert_dir}}/{{tls_client_key}}" -out "{{cert_dir}}/{{tls_client_csr}}"
+        fi
+    args:
+      executable: /bin/bash
+    ignore_errors: true
+    run_once: true
+    when: generate_client_cert
+
+  - name: Add required extension for client authentication
+    shell: >
+       echo extendedKeyUsage = clientAuth >> {{cert_dir}}/{{tls_client_extfile}}
+    ignore_errors: true
+    run_once: true
+    when: generate_client_cert
+
+  - name: Sign client cert request with CA
+    shell: |
+        if [ ! -e {{cert_dir}}/{{tls_client_cert}} ]
+        then
+        openssl x509 -req -sha256 -days {{tls_client_valid_days}} -CA {{tls_ca_path}}/{{tls_ca_cert}} -CAkey {{tls_ca_path}}/{{tls_ca_key}} \
+        -set_serial {{ 999999999 | random }} -in {{cert_dir}}/{{tls_client_csr}} -out {{cert_dir}}/{{tls_client_cert}} -extfile {{cert_dir}}/{{tls_client_extfile}}
+        fi
+    args:
+      executable: /bin/bash
+    ignore_errors: true
+    run_once: true
+    when: generate_client_cert
+
+  - name: Sign client cert request with CA
+    shell: |
+        if [ ! -e {{cert_dir}}/{{tls_client_cert}} ]
+        then
+        openssl x509 -req -sha256 -days {{tls_client_valid_days}} -CA {{tls_ca_path}}/{{tls_ca_cert}} -CAkey {{tls_ca_path}}/{{tls_ca_key}} \
+        -set_serial {{ 999999999 | random }} -in {{cert_dir}}/{{tls_client_csr}} -out {{cert_dir}}/{{tls_client_cert}} -extfile {{cert_dir}}/{{tls_client_extfile}}
+        fi
+    args:
+      executable: /bin/bash
+    ignore_errors: true
+    run_once: true
+    when: generate_client_cert

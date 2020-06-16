@@ -32,10 +32,6 @@ tls_ca_commonname: Elukerio Authority
 # -----------
 # CLIENT CERT
 # -----------
-tls_client_cert: "{{tls_client_authname}}.pem"
-tls_client_key: "{{tls_client_authname}}.key"
-tls_client_csr: "{{tls_client_authname}}.csr"
-tls_client_extfile: "{{tls_client_authname}}.cnf"
 tls_client_organization: Elukerio Adminsys
 tls_client_country: FR
 tls_client_key_size: 4096

@@ -1,18 +1,27 @@
 ---
-  - name: Generate PFX file using client cert
+  - name: Generate PFX file using client cert for {{clients}}
     shell: |
-        if [ ! -e {{tls_pfx_path}}/{{tls_client_authname}}.pfx ]
+        if [ ! -e {{cert_dir}}/{{ clients }}.pfx ]
         then
-        mkdir -p {{tls_pfx_path}}
-        openssl pkcs12 -export -out {{tls_pfx_path}}/{{tls_client_authname}}.pfx -inkey {{cert_dir}}/{{tls_client_key}} -in {{cert_dir}}/{{tls_client_cert}} -certfile {{tls_ca_path}}/{{tls_ca_cert}} -password pass:{{tls_pfx_password}}
+        mkdir -p {{cert_dir}}
+        openssl pkcs12 -export -out {{cert_dir}}/{{ clients }}.pfx -inkey {{cert_dir}}/{{ clients }}.key -in {{cert_dir}}/{{ clients }}.pem -certfile {{tls_ca_path}}/{{tls_ca_cert}} -password pass:{{tls_pfx_password}}
         fi
     args:
       executable: /bin/bash
     ignore_errors: true
     run_once: true
 
-  - name: Fetch pfx cert to {{fetch_dest}}
+  - name: Fetch pfx cert to {{fetch_dest}} for {{clients}}
     fetch:
-      src: "{{tls_pfx_path}}/{{tls_client_authname}}.pfx"
-      dest: "{{fetch_dest}}/{{tls_client_authname}}.pfx"
+      src: "{{cert_dir}}/{{ clients }}.pfx"
+      dest: "{{fetch_dest}}/{{ clients }}.pfx"
       flat: true
+
+  - name: Adding {{clients}} to authorized haproxy admin
+    lineinfile:
+      path: /etc/haproxy/authorized_admin
+      line: "{{ clients }}"
+      create: yes
+    delegate_to: "{{ item }}"
+    with_items:
+      - "{{groups.haproxy}}"

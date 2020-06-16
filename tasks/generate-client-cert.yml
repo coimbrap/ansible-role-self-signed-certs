@@ -1,53 +1,63 @@
 ---
   - name: Generate client private key
     openssl_privatekey:
-      path: "{{cert_dir}}/{{tls_client_key}}"
+      path: "{{cert_dir}}/{{ item }}.key"
       size: "{{tls_client_key_size}}"
     run_once: true
     when: generate_client_cert
+    with_items:
+      - "{{tls_client_authname}}"
 
   - name: Generate CSR and key for client cert
     shell: |
-        if [ ! -e {{cert_dir}}/{{tls_client_csr}} ]
+        if [ ! -e {{cert_dir}}/{{ item }}.csr ]
         then
-        openssl req -newkey rsa:{{tls_client_key_size}} -nodes -subj "/CN={{tls_client_authname}}/O={{tls_client_organization}}/C={{tls_client_country}}" \
-        -keyout "{{cert_dir}}/{{tls_client_key}}" -out "{{cert_dir}}/{{tls_client_csr}}"
+        openssl req -newkey rsa:{{tls_client_key_size}} -nodes -subj "/CN={{ item }}/O={{tls_client_organization}}/C={{tls_client_country}}" \
+        -keyout "{{cert_dir}}/{{ item }}.key" -out "{{cert_dir}}/{{ item }}.csr"
         fi
     args:
       executable: /bin/bash
     ignore_errors: true
     run_once: true
     when: generate_client_cert
+    with_items:
+      - "{{tls_client_authname}}"
 
   - name: Add required extension for client authentication
     shell: >
-       echo extendedKeyUsage = clientAuth >> {{cert_dir}}/{{tls_client_extfile}}
+       echo extendedKeyUsage = clientAuth >> "{{cert_dir}}/{{ item }}.cnf"
     ignore_errors: true
     run_once: true
     when: generate_client_cert
+    with_items:
+      - "{{tls_client_authname}}"
 
   - name: Sign client cert request with CA
     shell: |
-        if [ ! -e {{cert_dir}}/{{tls_client_cert}} ]
+        if [ ! -e {{cert_dir}}/{{ item }}.pem ]
         then
         openssl x509 -req -sha256 -days {{tls_client_valid_days}} -CA {{tls_ca_path}}/{{tls_ca_cert}} -CAkey {{tls_ca_path}}/{{tls_ca_key}} \
-        -set_serial {{ 999999999 | random }} -in {{cert_dir}}/{{tls_client_csr}} -out {{cert_dir}}/{{tls_client_cert}} -extfile {{cert_dir}}/{{tls_client_extfile}}
+        -set_serial {{ 999999999 | random }} -in {{cert_dir}}/{{ item }}.csr -out {{cert_dir}}/{{ item }}.pem -extfile {{cert_dir}}/{{ item }}.cnf
         fi
     args:
       executable: /bin/bash
     ignore_errors: true
     run_once: true
     when: generate_client_cert
+    with_items:
+      - "{{tls_client_authname}}"
 
   - name: Sign client cert request with CA
     shell: |
-        if [ ! -e {{cert_dir}}/{{tls_client_cert}} ]
+        if [ ! -e {{cert_dir}}/{{ item }}.pem ]
         then
         openssl x509 -req -sha256 -days {{tls_client_valid_days}} -CA {{tls_ca_path}}/{{tls_ca_cert}} -CAkey {{tls_ca_path}}/{{tls_ca_key}} \
-        -set_serial {{ 999999999 | random }} -in {{cert_dir}}/{{tls_client_csr}} -out {{cert_dir}}/{{tls_client_cert}} -extfile {{cert_dir}}/{{tls_client_extfile}}
+        -set_serial {{ 999999999 | random }} -in {{cert_dir}}/{{ item }}.csr -out {{cert_dir}}/{{ item }}.pem -extfile {{cert_dir}}/{{ item }}.cnf
         fi
     args:
       executable: /bin/bash
     ignore_errors: true
     run_once: true
     when: generate_client_cert
+    with_items:
+      - "{{tls_client_authname}}"

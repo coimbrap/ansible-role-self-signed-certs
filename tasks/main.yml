@@ -18,7 +18,10 @@
       - generate_server_cert|bool
 
   - name: Generate pfx cert
-    import_tasks: generate-pfx-cert.yml
+    include_tasks: generate-pfx-cert.yml
+    loop: "{{ tls_client_authname|flatten(levels=1) }}"
+    loop_control:
+      loop_var: "clients"
     when:
       - generate_tls_certs
       - generate_pfx_cert|bool

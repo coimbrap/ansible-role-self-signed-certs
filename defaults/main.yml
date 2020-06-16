@@ -29,6 +29,13 @@ tls_ca_country: FR
 tls_ca_organization: Elukerio
 tls_ca_commonname: Elukerio Authority
 
+# -------
+# COPY
+# -------
+haproxy_to_nginx: "{% if generate_server_cert %} true {% else %} false {% endif %}"
+client_to_haproxy: "{% if generate_client_cert %} true {% else %} false {% endif %}"
+copy_cert: "{% if haproxy_to_nginx %} true {% elif client_to_haproxy %} true {% else %} false {% endif %}"
+
 # -----------
 # CLIENT CERT
 # -----------

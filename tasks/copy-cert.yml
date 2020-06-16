@@ -1,13 +1,22 @@
 ---
-  - name: Copy CA cert to config folder from Autority to HAProxy
-    tags: sync-pull
-    synchronize:
-      src: "{{tls_ca_path}}/{{tls_ca_cert}}"
-      dest: "{{ct_path_certfile_haproxy}}"
-      mode: pull
-    delegate_to: haproxy
-    register: syncfile
-    run_once: true
+  - name: Ensures {{ct_path_certfile_auto_haproxy}} dir exists
+    run_once: yes
+    file: path={{ct_path_certfile_auto_haproxy}} state=directory
+    delegate_to: "{{ item }}"
+    with_items:
+      - "{{groups.haproxy}}"
+    when: client_to_haproxy|bool
+
+  - name: Fetch cert
+    run_once: yes
+    fetch: src="{{tls_ca_path}}/{{tls_ca_cert}}" dest=buffer/ flat=yes
+    when: client_to_haproxy|bool
+
+  - name: Copy cert to NGINX config folder
+    copy: src="buffer/{{tls_ca_cert}}" dest="{{ct_path_certfile_auto_haproxy}}"
+    delegate_to: "{{ item }}"
+    with_items:
+      - "{{groups.haproxy}}"
     when: client_to_haproxy|bool
 
   - name: Ensures {{ct_path_certfile_auto_nginx}} dir exists

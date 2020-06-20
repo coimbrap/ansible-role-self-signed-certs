@@ -1,5 +1,5 @@
 ---
-  - name: Create CSR for server cert
+  - name: generate server cert | create CSR for server cert
     shell: |
         if [ ! -e {{cert_dir}}/{{server_name}}.csr ]
         then
@@ -11,7 +11,7 @@
     ignore_errors: true
     when: generate_server_cert
 
-  - name: Sign server cert request by CA
+  - name: generate server cert | sign server cert request by CA
     shell: |
         if [ ! -e {{cert_dir}}/{{server_name}}.pem ]
         then

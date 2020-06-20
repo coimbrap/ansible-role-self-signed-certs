@@ -1,5 +1,5 @@
 ---
-  - name: Create required location
+  - name: generate CA cert | create required location
     file:
       path: "{{item}}"
       state: directory
@@ -8,13 +8,13 @@
       - "{{tls_ca_path}}"
       - "{{cert_dir}}"
 
-  - name: Generate CA private key
+  - name: generate CA cert | generate CA private key
     openssl_privatekey:
       path: "{{tls_ca_path}}/{{tls_ca_key}}"
       size: "{{tls_ca_key_size}}"
     run_once: true
 
-  - name: Generate self-signed cert for CA
+  - name: generate CA cert | generate self-signed cert for CA
     shell: |
         if [ ! -e {{tls_ca_path}}/{{tls_ca_cert}} ]
         then

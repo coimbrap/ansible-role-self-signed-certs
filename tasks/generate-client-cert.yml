@@ -1,5 +1,5 @@
 ---
-  - name: Generate client private key
+  - name: generate client cert | generate client private key
     openssl_privatekey:
       path: "{{cert_dir}}/{{ item }}.key"
       size: "{{tls_client_key_size}}"
@@ -8,7 +8,7 @@
     with_items:
       - "{{tls_client_authname}}"
 
-  - name: Generate CSR and key for client cert
+  - name: generate client cert | generate CSR and key for client cert
     shell: |
         if [ ! -e {{cert_dir}}/{{ item }}.csr ]
         then
@@ -23,7 +23,7 @@
     with_items:
       - "{{tls_client_authname}}"
 
-  - name: Add required extension for client authentication
+  - name: generate client cert | add required extension for client authentication
     shell: >
        echo extendedKeyUsage = clientAuth >> "{{cert_dir}}/{{ item }}.cnf"
     ignore_errors: true
@@ -32,7 +32,7 @@
     with_items:
       - "{{tls_client_authname}}"
 
-  - name: Sign client cert request with CA
+  - name: generate client cert | sign client cert request with CA
     shell: |
         if [ ! -e {{cert_dir}}/{{ item }}.pem ]
         then
@@ -47,7 +47,7 @@
     with_items:
       - "{{tls_client_authname}}"
 
-  - name: Sign client cert request with CA
+  - name: generate client cert | sign client cert request with CA
     shell: |
         if [ ! -e {{cert_dir}}/{{ item }}.pem ]
         then

@@ -1,5 +1,5 @@
 ---
-  - name: Generate PFX file using client cert for {{clients}}
+  - name: generate pfx cert | generate PFX file using client cert for {{clients}}
     shell: |
         if [ ! -e {{cert_dir}}/{{ clients }}.pfx ]
         then
@@ -11,13 +11,13 @@
     ignore_errors: true
     run_once: true
 
-  - name: Fetch pfx cert to {{fetch_dest}} for {{clients}}
+  - name: generate pfx cert | fetch pfx cert to {{fetch_dest}} for {{clients}}
     fetch:
       src: "{{cert_dir}}/{{ clients }}.pfx"
       dest: "{{fetch_dest}}/{{ clients }}.pfx"
       flat: true
 
-  - name: Adding {{clients}} to authorized haproxy admin
+  - name: generate pfx cert | adding {{clients}} to authorized haproxy admin
     lineinfile:
       path: /etc/haproxy/authorized_admin
       line: "{{ clients }}"

@@ -1,20 +1,17 @@
+---
 galaxy_info:
+  role_name: self-signed-certs
   author: Pierre Coimbra
-  description: Generate and deploy self-signed certs
-  company: Elukerio
-
+  description: Ansible Role for generating and deploying self-signed certificates
   license: GPLv3
-
-  min_ansible_version: 2.4
-
+  min_ansible_version: 2.1
   platforms:
-  - name: All
+  - name: debian
     versions:
-    - all
-
+    - buster
   galaxy_tags:
     - tls
     - openssl
     - certificates
-
-dependencies: []
+dependencies:
+  - pyOpenSSL

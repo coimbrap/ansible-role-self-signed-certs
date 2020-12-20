@@ -1,8 +1,9 @@
 # Ansible role - Selfsigned certificates
 
-Utilise pyOpenSSL sur l'hôte
+Ansible Role for generating and deploying self-signed certificates
 
-host_vars/certs/cert.yml
+### Example
+
 ```yaml
 generate_ca_cert: true # Just once
 generate_client_cert: true
@@ -27,6 +28,10 @@ tls_pfx_password: strongpass
 fetch_pfx: true # Copy pfx to your computer
 fetch_dest: ..
 ```
+
+### Requirements
+
+- pyOpenSSL
 
 ### License
 

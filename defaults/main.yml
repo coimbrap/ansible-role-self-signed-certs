@@ -1,17 +1,21 @@
 ---
-generate_tls_certs: true
+generate_tls_certs: false
 cert_dir: /root/tmpcrt
-generate_ca_cert: true
+generate_ca_cert: false
 generate_client_cert: false
-generate_server_cert: true
+generate_server_cert: false
 generate_pfx_cert: false
 
+ldap_group: "{{groups.openldap}}"
+haproxy_group: "{{ groups.haproxy }}"
+nginx_group: "{{ groups.nginx }}"
 # ----
-# COPY
+# LDAP
 # ----
-copy_cert: false
-ct_path_certfile_auto_nginx: /etc/nginx/ssl
-ct_path_certfile_auto_haproxy: /etc/ssl/haproxy
+
+ldap: false
+ct_path_cert_ldap: /etc/ssl/ldap
+
 
 # -------
 # CA CERT
@@ -32,9 +36,11 @@ tls_ca_commonname: Elukerio Authority
 # -------
 # COPY
 # -------
-haproxy_to_nginx: "{% if generate_server_cert %} true {% else %} false {% endif %}"
-client_to_haproxy: "{% if generate_client_cert %} true {% else %} false {% endif %}"
-copy_cert: "{% if haproxy_to_nginx %} true {% elif client_to_haproxy %} true {% else %} false {% endif %}"
+ct_path_certfile_auto_nginx: /etc/nginx/ssl
+ct_path_certfile_auto_haproxy: /etc/ssl/haproxy
+haproxy_to_nginx: "{% if generate_server_cert and not ldap %} true {% else %} false {% endif %}"
+client_to_haproxy: "{% if generate_client_cert and not ldap %} true {% else %} false {% endif %}"
+copy_cert: "{% if haproxy_to_nginx or ldap or client_to_haproxy%} true {% else %} false {% endif %}"
 
 # -----------
 # CLIENT CERT
@@ -42,7 +48,8 @@ copy_cert: "{% if haproxy_to_nginx %} true {% elif client_to_haproxy %} true {% 
 tls_client_organization: Elukerio Adminsys
 tls_client_country: FR
 tls_client_key_size: 4096
-tls_client_authname: Client
+tls_client_authname:
+  - Client
 tls_client_valid_days: 730
 
 # -----------

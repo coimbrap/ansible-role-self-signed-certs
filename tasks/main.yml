@@ -4,18 +4,21 @@
     when:
       - generate_tls_certs
       - generate_ca_cert|bool
+    delegate_to: "{{ selfsignedcerts_host }}"
 
   - name: Generate client cert
     import_tasks: generate-client-cert.yml
     when:
       - generate_tls_certs
       - generate_client_cert|bool
+    delegate_to: "{{ selfsignedcerts_host }}"
 
   - name: Generate server cert
     import_tasks: generate-server-cert.yml
     when:
       - generate_tls_certs
       - generate_server_cert|bool
+    delegate_to: "{{ selfsignedcerts_host }}"
 
   - name: Generate pfx cert
     include_tasks: generate-pfx-cert.yml
@@ -31,3 +34,4 @@
     when:
       - generate_tls_certs
       - copy_cert|bool
+    delegate_to: "{{ selfsignedcerts_host }}"

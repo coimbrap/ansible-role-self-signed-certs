@@ -24,4 +24,4 @@
       create: yes
     delegate_to: "{{ item }}"
     with_items:
-      - "{{groups.haproxy}}"
+      - "{{ haproxy_group }}"

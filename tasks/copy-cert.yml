@@ -1,72 +1,80 @@
 ---
-  - name: copy cert | ensures {{ct_path_certfile_auto_haproxy}} dir exists
-    run_once: yes
-    file: path={{ct_path_certfile_auto_haproxy}} state=directory
-    delegate_to: "{{ item }}"
-    with_items:
-      - "{{groups.haproxy}}"
-    when: client_to_haproxy|bool
+- block:
+    - name: copy cert | ensures {{ct_path_cert_ldap}} dir exists
+      run_once: yes
+      file: path={{ct_path_cert_ldap}} state=directory
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ ldap_group }}"
+    - name: copy cert | fetch certs
+      fetch: src="{{ item }}" dest=/tmp/ flat=yes
+      when: ldap|bool
+      with_items:
+        - "{{tls_ca_path}}/{{tls_ca_cert}}"
+        - "{{cert_dir}}/{{server_name}}.key"
+        - "{{cert_dir}}/{{server_name}}.pem"
+    - name: copy cert | copy certs to LDAP folder
+      copy: src="/tmp/{{item}}" dest="{{ct_path_cert_ldap}}"
+      delegate_to: "{{ delegate_to_ldap }}"
+      with_items:
+        - "{{tls_ca_cert}}"
+        - "{{server_name}}.key"
+        - "{{server_name}}.pem"
+      # TO ADD : with_items for ldap CT for 2/3 task
+  when: ldap|bool
 
-  - name: copy cert | fetch cert
-    run_once: yes
-    fetch: src="{{tls_ca_path}}/{{tls_ca_cert}}" dest=/tmp/ flat=yes
-    when: client_to_haproxy|bool
+- block:
+    - name: copy cert | ensures {{ct_path_certfile_auto_haproxy}} dir exists
+      run_once: yes
+      file: path={{ct_path_certfile_auto_haproxy}} state=directory
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ haproxy_group }}"
+    - name: copy cert | fetch cert
+      run_once: yes
+      fetch: src="{{tls_ca_path}}/{{tls_ca_cert}}" dest=/tmp/ flat=yes
+    - name: copy cert | copy cert to NGINX config folder
+      copy: src="/tmp/{{tls_ca_cert}}" dest="{{ct_path_certfile_auto_haproxy}}"
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ haproxy_group }}"
+  when: client_to_haproxy|bool
 
-  - name: copy cert | copy cert to NGINX config folder
-    copy: src="/tmp/{{tls_ca_cert}}" dest="{{ct_path_certfile_auto_haproxy}}"
-    delegate_to: "{{ item }}"
-    with_items:
-      - "{{groups.haproxy}}"
-    when: client_to_haproxy|bool
-
-  - name: copy cert | ensures {{ct_path_certfile_auto_nginx}} dir exists
-    run_once: yes
-    file: path={{ct_path_certfile_auto_nginx}} state=directory
-    delegate_to: "{{ item }}"
-    with_items:
-      - "{{groups.nginx}}"
-    when: haproxy_to_nginx|bool
-
-  - name: copy cert | fetch cert
-    run_once: yes
-    fetch: src="{{cert_dir}}/{{server_name}}.pem" dest=/tmp/ flat=yes
-    when: haproxy_to_nginx|bool
-
-  - name: copy cert | copy cert to NGINX config folder
-    copy: src="/tmp/{{server_name}}.pem" dest="{{ct_path_certfile_auto_nginx}}/{{server_name}}.crt"
-    delegate_to: "{{ item }}"
-    with_items:
-      - "{{groups.nginx}}"
-    when: haproxy_to_nginx|bool
-
-  - name: copy cert | fetch key file
-    run_once: yes
-    fetch: src="{{cert_dir}}/{{server_name}}.key" dest=/tmp/ flat=yes
-    when: haproxy_to_nginx|bool
-
-  - name: copy cert | copy key file to NGINX config folder
-    copy: src="/tmp/{{server_name}}.key" dest="{{ct_path_certfile_auto_nginx}}/{{server_name}}.key"
-    delegate_to: "{{ item }}"
-    with_items:
-      - "{{groups.nginx}}"
-    when: haproxy_to_nginx|bool
-
-  - name: copy cert | ensures {{ct_path_certfile_auto_haproxy}} dir exists
-    run_once: yes
-    file: path={{ct_path_certfile_auto_haproxy}} state=directory
-    delegate_to: "{{ item }}"
-    with_items:
-      - "{{groups.haproxy}}"
-    when: haproxy_to_nginx|bool
-
-  - name: copy cert | fetch cert
-    run_once: yes
-    fetch: src="{{tls_ca_path}}/{{tls_ca_cert}}" dest=/tmp/ flat=yes
-    when: haproxy_to_nginx|bool
-
-  - name: copy cert | copy cert to NGINX config folder
-    copy: src="/tmp/{{tls_ca_cert}}" dest="{{ct_path_certfile_auto_haproxy}}/{{tls_ca_cert}}"
-    delegate_to: "{{ item }}"
-    with_items:
-      - "{{groups.haproxy}}"
-    when: haproxy_to_nginx|bool
+- block:
+    - name: copy cert | ensures {{ct_path_certfile_auto_nginx}} dir exists
+      run_once: yes
+      file: path={{ct_path_certfile_auto_nginx}} state=directory
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ nginx_group }}"
+    - name: copy cert | fetch cert
+      run_once: yes
+      fetch: src="{{cert_dir}}/{{server_name}}.pem" dest=/tmp/ flat=yes
+    - name: copy cert | copy cert to NGINX config folder
+      copy: src="/tmp/{{server_name}}.pem" dest="{{ct_path_certfile_auto_nginx}}/{{server_name}}.crt"
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ nginx_group }}"
+    - name: copy cert | fetch key file
+      run_once: yes
+      fetch: src="{{cert_dir}}/{{server_name}}.key" dest=/tmp/ flat=yes
+    - name: copy cert | copy key file to NGINX config folder
+      copy: src="/tmp/{{server_name}}.key" dest="{{ct_path_certfile_auto_nginx}}/{{server_name}}.key"
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ nginx_group }}"
+    - name: copy cert | ensures {{ct_path_certfile_auto_haproxy}} dir exists
+      run_once: yes
+      file: path={{ct_path_certfile_auto_haproxy}} state=directory
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ haproxy_group }}"
+    - name: copy cert | fetch cert
+      run_once: yes
+      fetch: src="{{tls_ca_path}}/{{tls_ca_cert}}" dest=/tmp/ flat=yes
+    - name: copy cert | copy cert to NGINX config folder
+      copy: src="/tmp/{{tls_ca_cert}}" dest="{{ct_path_certfile_auto_haproxy}}/{{tls_ca_cert}}"
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ haproxy_group }}"
+  when: haproxy_to_nginx|bool

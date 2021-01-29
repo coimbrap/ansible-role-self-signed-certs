@@ -4,7 +4,6 @@
       path: "{{cert_dir}}/{{ item }}.key"
       size: "{{tls_client_key_size}}"
     run_once: true
-    when: generate_client_cert
     with_items:
       - "{{tls_client_authname}}"
 
@@ -19,7 +18,6 @@
       executable: /bin/bash
     ignore_errors: true
     run_once: true
-    when: generate_client_cert
     with_items:
       - "{{tls_client_authname}}"
 
@@ -28,7 +26,6 @@
        echo extendedKeyUsage = clientAuth >> "{{cert_dir}}/{{ item }}.cnf"
     ignore_errors: true
     run_once: true
-    when: generate_client_cert
     with_items:
       - "{{tls_client_authname}}"
 
@@ -43,7 +40,6 @@
       executable: /bin/bash
     ignore_errors: true
     run_once: true
-    when: generate_client_cert
     with_items:
       - "{{tls_client_authname}}"
 
@@ -58,6 +54,5 @@
       executable: /bin/bash
     ignore_errors: true
     run_once: true
-    when: generate_client_cert
     with_items:
       - "{{tls_client_authname}}"

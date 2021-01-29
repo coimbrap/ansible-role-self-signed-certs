@@ -9,7 +9,6 @@
     args:
       executable: /bin/bash
     ignore_errors: true
-    when: generate_server_cert
 
   - name: generate server cert | sign server cert request by CA
     shell: |
@@ -21,4 +20,3 @@
     args:
       executable: /bin/bash
     ignore_errors: true
-    when: generate_server_cert
